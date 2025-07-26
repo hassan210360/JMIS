@@ -1,0 +1,37 @@
+function findMatchingCandidates($jobId) {
+    global $conn;
+    
+    // Get job requirements
+    $job = $conn->query("SELECT * FROM lmis3_jobs_table WHERE job_id = $jobId")->fetch_assoc();
+    $requiredSkills = $conn->query("SELECT skill_id FROM lmis3_job_skills_table WHERE job_id = $jobId")->fetch_all(MYSQLI_ASSOC);
+    
+    // Base query
+    $query = "SELECT u.user_id, p.first_name, p.last_name, 
+              COUNT(js.skill_id) as matched_skills,
+              GROUP_CONCAT(s.name_en) as matched_skill_names
+              FROM lmis3_users_table u
+              JOIN lmis3_user_profiles_table p ON u.user_id = p.user_id
+              LEFT JOIN lmis3_jobseeker_skills_table js ON u.user_id = js.jobseeker_id
+              LEFT JOIN lmis3_skills_table s ON js.skill_id = s.skill_id
+              WHERE u.user_type = 'jobseeker'";
+    
+    // Add filters based on job requirements
+    if (!empty($job['governorate'])) {
+        $query .= " AND p.governorate = '" . $job['governorate'] . "'";
+    }
+    
+    if (!empty($job['education_required'])) {
+        $query .= " AND (SELECT MAX(education_level) FROM lmis3_education_table e WHERE e.user_id = u.user_id) >= '" . $job['education_required'] . "'";
+    }
+    
+    // Filter by required skills if any
+    if (!empty($requiredSkills)) {
+        $skillIds = array_column($requiredSkills, 'skill_id');
+        $query .= " AND js.skill_id IN (" . implode(",", $skillIds) . ")";
+    }
+    
+    $query .= " GROUP BY u.user_id, p.first_name, p.last_name
+                ORDER BY matched_skills DESC";
+    
+    return $conn->query($query);
+}

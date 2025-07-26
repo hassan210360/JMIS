@@ -1,0 +1,77 @@
+<div class="occupation-browser">
+    <div class="filters">
+        <select id="sector-filter">
+            <option value="">All Sectors</option>
+            <option value="construction">Construction</option>
+            <option value="tourism">Tourism</option>
+            <!-- Other sectors -->
+        </select>
+        
+        <select id="education-filter">
+            <option value="">All Education Levels</option>
+            <option value="secondary">Secondary</option>
+            <option value="diploma">Diploma</option>
+            <!-- Other levels -->
+        </select>
+        
+        <input type="text" id="search-occupation" placeholder="Search occupations...">
+    </div>
+    
+    <div class="results">
+        <table>
+            <thead>
+                <tr>
+                    <th>ENOC Code</th>
+                    <th>Occupation Title</th>
+                    <th>ESCO Code</th>
+                    <th>ISCO Code</th>
+                    <th>Education Level</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="occupation-results">
+                <!-- Filled via AJAX -->
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="occupation-detail" id="occupation-detail">
+        <!-- Detailed view appears when an occupation is selected -->
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Load initial occupations
+    loadOccupations();
+    
+    // Filter change handlers
+    $('#sector-filter, #education-filter, #search-occupation').on('change keyup', function() {
+        loadOccupations();
+    });
+});
+
+function loadOccupations() {
+    $.ajax({
+        url: 'api/occupations.php',
+        data: {
+            sector: $('#sector-filter').val(),
+            education: $('#education-filter').val(),
+            search: $('#search-occupation').val()
+        },
+        success: function(data) {
+            $('#occupation-results').html(data);
+        }
+    });
+}
+
+function showOccupationDetail(enocCode) {
+    $.ajax({
+        url: 'api/occupation_detail.php',
+        data: { enoc_code: enocCode },
+        success: function(data) {
+            $('#occupation-detail').html(data);
+        }
+    });
+}
+</script>

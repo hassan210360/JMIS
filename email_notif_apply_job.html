@@ -1,0 +1,24 @@
+$to = $guest_email;
+$subject = "Thank You for Applying to: " . $job['title'];
+$headers = "MIME-Version: 1.0\r\n";
+$headers .= "Content-type:text/html;charset=UTF-8\r\n";
+$headers .= "From: Egypt LMIS <noreply@yourdomain.com>\r\n";
+
+$message = "
+<html>
+<head><style>
+body { font-family: Arial; }
+.container { padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; }
+</style></head>
+<body>
+<div class='container'>
+<h2>Application Received ✅</h2>
+<p>Dear applicant,</p>
+<p>Thank you for applying to <strong>{$job['title']}</strong> at Egypt LMIS.</p>
+<p>Your application was received on " . date('F j, Y, g:i a') . ".</p>
+<p>Regards,<br>LMIS Team</p>
+</div>
+</body></html>
+";
+
+mail($to, $subject, $message, $headers);
